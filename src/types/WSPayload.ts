@@ -2,11 +2,29 @@ enum ResponsePayloadType {
   error = 'error',
   board = 'board',
   user = 'user',
-  room = 'room'
+  room = 'room',
+  participantRole = 'participantRole',
+  highlight = 'highlight'
 }
 
 enum RequestPayloadType {
-  move = 'move'
+  move = 'move',
+  highlight = 'highlight'
 }
 
-export { ResponsePayloadType, RequestPayloadType };
+type RequestPayload = {
+  type: RequestPayloadType;
+  message?: any;
+};
+
+type ResponsePayload = {
+  type: ResponsePayloadType;
+  message?: any;
+};
+
+export {
+  ResponsePayloadType,
+  RequestPayloadType,
+  RequestPayload,
+  ResponsePayload
+};

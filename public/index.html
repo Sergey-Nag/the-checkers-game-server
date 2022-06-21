@@ -5,23 +5,166 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    :root {
+      --black: #51505e;
+      --white: #f0f0f0;
+    }
+    .board {
+      width: 700px;
+      height: 700px;
+      margin: 8vh auto 0;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .cell {
+      width: calc(100% / 8);
+      height: calc(100% / 8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    .cell.highlight {
+      outline: 6px solid rgba(255, 255, 0, 0.704);
+      z-index: 2;
+    }
+    .cell.black {
+      background-color: var(--black)
+    }
+    .cell.white {
+      background-color: var(--white)
+    }
+    .cell::before,
+    .cell::after {
+      position: absolute;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--black);
+      opacity: .6;
+      pointer-events: none;
+    }
+    .cell:nth-child(-n + 8)::before {
+      content: attr(data-col);
+      top: -45%;
+    }
+    .cell:nth-last-child(-n + 8)::before {
+      content: attr(data-col);
+      bottom: -45%;
+    }
+    .cell:nth-child(8n)::after {
+      content: attr(data-row);
+      right: -35%;
+    }
+    .cell:nth-child(8n + 1)::after {
+      content: attr(data-row);
+      left: -35%;
+    }
+    .figure {
+      width: 75%;
+      height: 75%;
+      border-radius: 50%;
+      border-width: 4px;
+      border-style: solid;
+      text-align: center;
+      line-height: 420%;
+      font-weight: bold;
+    }
+    .figure.black {
+      background-color: black;
+      border-color: white;
+      color: white;
+    }
+    .figure.white {
+      background-color: white;
+      border-color: black;
+      color: black;
+    }
+    .figure.king::before {
+      content: '♔';
+      font-size: 2rem;
+    }
+  </style>
 </head>
 <body>
+  <div class="board"></div>
+
   <script>
+    const board = document.querySelector('.board');
 
-    const ws = new WebSocket('ws://localhost:3000?roomId=123123&userName=serg');
+    const getCell = (cell) => `<div data-col="${cell.col}" data-row="${cell.row}" class="cell ${cell.color}">
+      ${cell.figure ? `<div class="figure ${cell.figure.color} ${cell.figure.isKing ? 'king' : ''}"></div>` : ''}
+    </div>`;
 
-    ws.onopen = () => {
-      console.log('open');
-      ws.send('hello');
+    const renderBoard = (cells) => {
+      const cellsHtml = cells.map((cell) => getCell(cell)).join('');
+
+      board.innerHTML = cellsHtml;
     }
-    ws.onmessage = (e) => {
-      console.log('msg', e);
+
+    const removeHighlightFromCells = () => {
+      board.querySelectorAll('.cell.highlight').forEach((cell) => cell.classList.remove('highlight'));
     }
+
+    const highlightCells = (cells) => {
+      removeHighlightFromCells();
+      cells.forEach((cell) => board.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`).classList.add('highlight'));
+    }
+
+    const payload = (type, message) => JSON.stringify({ type, message });
+
+    const parsePayload = (data) => JSON.parse(data);
+    const connectToTheRoom = (roomId, userName) => {
+      const ws = new WebSocket(`ws://localhost:3000?roomId=${roomId}&userName=${userName}`);
+      ws.onopen = () => {
+        console.log('open');
+        ws.send('hello');
+      }
+      ws.onmessage = (e) => {
+        const payload = parsePayload(e.data);
+        switch (payload.type) {
+          case 'error':
+            console.warn('Error:', payload.message);
+            break;
+          case 'board':
+            renderBoard(payload.message);
+            break;
+          case 'highlight':
+            highlightCells(payload.message);
+            break;
+          default:
+            console.log(payload);
+        }
+      }
+      const selectedCells = {
+        from: null,
+        to: null
+      };
+      const onCellClick = ({col, row}) => {
+        if (selectedCells.from?.col === col && selectedCells.from?.row === +row) {
+          removeHighlightFromCells();
+          selectedCells.from = null;
+        } else {
+          selectedCells.from = {col, row: +row};
+          ws.send(payload('highlight', selectedCells));
+        }
+        /* else if (!selectedCells.to) {
+          selectedCells.to = { col, row };
+        } else {
+          //ws.send(payload('move'))
+        }*/
+      }; 
+
+      board.addEventListener('click', ({target}) => {
+        const cell = target.closest('.cell');
+        if (cell) onCellClick(cell.dataset);
+      })
+    }
+    
 
     fetch('http://localhost:8080/api/rooms')
       .then(data => data.json())
-      .then(data => console.log(data));
+      .then(data => connectToTheRoom(data[0].id, 'serg'));
 
   </script>
 </body>

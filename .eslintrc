@@ -13,6 +13,7 @@
   ],
   "rules": { 
     // "no-console": 2
+    "newline-before-return": "warn",
     "prettier/prettier": [
       "error",
       {
@@ -27,6 +28,7 @@
       }
     ],
     "no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-function": [
       "warn",
       {
