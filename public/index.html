@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+
+    const ws = new WebSocket('ws://localhost:3000?roomId=123123&userName=serg');
+
+    ws.onopen = () => {
+      console.log('open');
+      ws.send('hello');
+    }
+    ws.onmessage = (e) => {
+      console.log('msg', e);
+    }
+
+    fetch('http://localhost:8080/api/rooms')
+      .then(data => data.json())
+      .then(data => console.log(data));
+
+  </script>
+</body>
+</html>
