@@ -13,8 +13,8 @@ export default class Board {
   constructor() {
     this.setupCells();
 
-    this.placeFigure(0, 3, Color.Black);
-    this.placeFigure(5, 8, Color.White);
+    this.placeFigure(2, 3, Color.Black);
+    this.placeFigure(5, 6, Color.White);
   }
 
   getCell(params: CellSearchParams): Cell | null {
@@ -38,15 +38,39 @@ export default class Board {
   moveFigure(from: Cell, to: Cell) {
     if (!from.figure || to.figure) return false;
 
-    to.figure = from.figure;
+    if (
+      !from.figure.canMoveToEat(to, this.cells) &&
+      !from.figure.canMove(to, this._cells)
+    )
+      return false;
+
+    to.setFigure(from.figure);
     from.figure = null;
+
+    return true;
   }
 
-  getAvailableMoves(cell: Cell): Cell[] {
-    if (!cell.figure) return [];
+  getAvailableMoves({ figure }: Cell): Cell[] {
+    if (!figure) return [];
+
+    const availableCellsToEat = this._cells.filter((C) =>
+      (figure as Figure).canMoveToEat(C, this._cells)
+    );
+
+    if (availableCellsToEat.length) return availableCellsToEat;
 
     const availableCells = this._cells.filter((C) =>
-      (cell.figure as Figure).canMove(C, this._cells)
+      (figure as Figure).canMove(C, this._cells)
+    );
+
+    return availableCells;
+  }
+
+  getAvailableEatMoves({ figure }: Cell): Cell[] {
+    if (!figure) return [];
+
+    const availableCells = this._cells.filter((C) =>
+      (figure as Figure).canMoveToEat(C, this._cells)
     );
 
     return availableCells;
@@ -65,7 +89,7 @@ export default class Board {
       for (let x = 0; x < 8; x++) {
         const cell = this.getCell({ x, y });
 
-        if (cell && cell.color === Color.Black) cell.setFigure(color);
+        if (cell && cell.color === Color.Black) cell.setFigure({ color });
       }
     }
   }

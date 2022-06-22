@@ -39,17 +39,43 @@ const run = (port: number) => {
             case RequestPayloadType.highlight: {
               const { col, row } = message.from;
               const cell = room.board.getCell({ col, row });
-              console.log(message, cell);
-
               if (!cell) return;
+              console.log('from>', cell);
 
-              const availableCells = room.board.getAvailableMoves(cell);
+              const availableCells = [
+                // ...room.board
+                //   .getAvailableEatMoves(cell)
+                //   .map((cell) => ({ ...cell, canEat: true })),
+                ...room.board
+                  .getAvailableMoves(cell)
+                  .map((cell) => ({ ...cell, canEat: false }))
+              ];
 
               ws.send(payload(ResponsePayloadType.highlight, availableCells));
               break;
             }
-            case RequestPayloadType.move:
+            case RequestPayloadType.move: {
+              const { from, to } = message;
+              // console.log(from, to);
+
+              const fromCell = room.board.getCell({
+                col: from.col,
+                row: from.row
+              });
+              const toCell = room.board.getCell({
+                col: to.col,
+                row: to.row
+              });
+
+              if (!fromCell || !toCell) throw "Cells didn't find";
+
+              const success = room.board.moveFigure(fromCell, toCell);
+              console.log('s', success);
+
+              if (success)
+                ws.send(payload(ResponsePayloadType.board, room.board.cells));
               break;
+            }
             default:
               console.log('default payload', type, message);
           }

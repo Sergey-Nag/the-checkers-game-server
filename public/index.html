@@ -25,9 +25,16 @@
       align-items: center;
       position: relative;
     }
+    .cell.eat,
     .cell.highlight {
-      outline: 6px solid rgba(255, 255, 0, 0.704);
+      outline: 6px solid;
       z-index: 2;
+    }
+    .cell.highlight {
+      outline-color: rgba(255, 255, 0, 0.7);
+    }
+    .cell.eat {
+      outline-color: rgba(255, 0, 0, 0.7);
     }
     .cell.black {
       background-color: var(--black)
@@ -103,12 +110,12 @@
     }
 
     const removeHighlightFromCells = () => {
-      board.querySelectorAll('.cell.highlight').forEach((cell) => cell.classList.remove('highlight'));
+      board.querySelectorAll('.cell.highlight, .cell.eat').forEach((cell) => cell.className = `cell ${cell.classList.contains('black') ? 'black' : 'white'}`);
     }
 
     const highlightCells = (cells) => {
       removeHighlightFromCells();
-      cells.forEach((cell) => board.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`).classList.add('highlight'));
+      cells.forEach((cell) => board.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`).classList.add(cell.canEat ? 'eat' : 'highlight'));
     }
 
     const payload = (type, message) => JSON.stringify({ type, message });
@@ -131,6 +138,7 @@
             break;
           case 'highlight':
             highlightCells(payload.message);
+            console.log(payload.message);
             break;
           default:
             console.log(payload);
@@ -141,18 +149,24 @@
         to: null
       };
       const onCellClick = ({col, row}) => {
-        if (selectedCells.from?.col === col && selectedCells.from?.row === +row) {
+        if (!selectedCells.from) {
+          selectedCells.from = { col, row: +row };
+        } else if (selectedCells.from?.col === col && selectedCells.from?.row === +row) {
+          selectedCells.from = selectedCells.to = null;
           removeHighlightFromCells();
-          selectedCells.from = null;
-        } else {
-          selectedCells.from = {col, row: +row};
-          ws.send(payload('highlight', selectedCells));
+        } else if (!selectedCells.to) {
+          selectedCells.to = { col, row: +row };
         }
-        /* else if (!selectedCells.to) {
-          selectedCells.to = { col, row };
-        } else {
-          //ws.send(payload('move'))
-        }*/
+
+        if (selectedCells.from && !selectedCells.to) {
+          ws.send(payload('highlight', selectedCells));
+        } else if (selectedCells.from) {
+          ws.send(payload('move', selectedCells));
+          selectedCells.from = selectedCells.to = null;
+          removeHighlightFromCells();
+        }
+
+        console.log(selectedCells)
       }; 
 
       board.addEventListener('click', ({target}) => {
