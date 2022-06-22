@@ -35,11 +35,18 @@ export default class Board {
     return null;
   }
 
+  moveFigure(from: Cell, to: Cell) {
+    if (!from.figure || to.figure) return false;
+
+    to.figure = from.figure;
+    from.figure = null;
+  }
+
   getAvailableMoves(cell: Cell): Cell[] {
     if (!cell.figure) return [];
 
     const availableCells = this._cells.filter((C) =>
-      (cell.figure as Figure).canMove(C)
+      (cell.figure as Figure).canMove(C, this._cells)
     );
 
     return availableCells;
