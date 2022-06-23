@@ -2,6 +2,8 @@
 //   '0' = 'a'
 // }
 
+import Cell from '../models/Game/Cell';
+
 type ColName = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
 
 type CellSearchParams =
@@ -14,4 +16,8 @@ type CellSearchParams =
       row: number;
     };
 
-export { ColName, CellSearchParams };
+interface CellAnswer extends Cell {
+  canEat: boolean;
+}
+
+export { ColName, CellSearchParams, CellAnswer };

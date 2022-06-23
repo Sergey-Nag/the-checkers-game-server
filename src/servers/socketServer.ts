@@ -1,10 +1,12 @@
 import { WebSocketServer } from 'ws';
+import GameController from '../controllers/GameController';
 import {
   errorPayload,
   getRoomQueryParams,
   payload,
   requestHandler
 } from '../helpers/serversHelpers';
+import King from '../models/Game/Figures/King';
 import Room from '../models/Room';
 import User from '../models/Users/User';
 import { WSConnect } from '../types/RoomTypes';
@@ -19,13 +21,11 @@ const run = (port: number) => {
 
   wss.on('connection', (ws: WSConnect, req) => {
     try {
-      const { roomId, userName } = getRoomQueryParams(req.url as string);
-      const user = User.getOrCreate(userName);
-      const room = Room.get(roomId);
+      const game = new GameController(req.url as string);
+      // const { roomId, userName } =
+      const { user, room } = game;
 
-      if (!room) throw 'Room not found';
-
-      ws.gameData = { roomId, userId: user.id };
+      ws.gameData = { roomId: room.id, userId: user.id };
       const participantRole = room.addParticipant(user);
 
       ws.send(payload(ResponsePayloadType.participantRole, participantRole));
@@ -38,39 +38,14 @@ const run = (port: number) => {
           switch (type) {
             case RequestPayloadType.highlight: {
               const { col, row } = message.from;
-              const cell = room.board.getCell({ col, row });
-              if (!cell) return;
-              console.log('from>', cell);
-
-              const availableCells = [
-                // ...room.board
-                //   .getAvailableEatMoves(cell)
-                //   .map((cell) => ({ ...cell, canEat: true })),
-                ...room.board
-                  .getAvailableMoves(cell)
-                  .map((cell) => ({ ...cell, canEat: false }))
-              ];
-
+              const availableCells = game.getAvailableMovesFromCell(col, row);
               ws.send(payload(ResponsePayloadType.highlight, availableCells));
               break;
             }
             case RequestPayloadType.move: {
               const { from, to } = message;
-              // console.log(from, to);
 
-              const fromCell = room.board.getCell({
-                col: from.col,
-                row: from.row
-              });
-              const toCell = room.board.getCell({
-                col: to.col,
-                row: to.row
-              });
-
-              if (!fromCell || !toCell) throw "Cells didn't find";
-
-              const success = room.board.moveFigure(fromCell, toCell);
-              console.log('s', success);
+              const success = game.moveFigures(from, to);
 
               if (success)
                 ws.send(payload(ResponsePayloadType.board, room.board.cells));
