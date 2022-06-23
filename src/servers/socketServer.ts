@@ -1,14 +1,6 @@
 import { WebSocketServer } from 'ws';
 import GameController from '../controllers/GameController';
-import {
-  errorPayload,
-  getRoomQueryParams,
-  payload,
-  requestHandler
-} from '../helpers/serversHelpers';
-import King from '../models/Game/Figures/King';
-import Room from '../models/Room';
-import User from '../models/Users/User';
+import { errorPayload, payload } from '../helpers/serversHelpers';
 import { WSConnect } from '../types/RoomTypes';
 import {
   RequestPayload,
