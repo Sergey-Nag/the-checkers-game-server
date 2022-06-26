@@ -175,7 +175,7 @@
 
     const parsePayload = (data) => JSON.parse(data);
     const connectToTheRoom = (roomId, userName) => {
-      const ws = new WebSocket(`ws://localhost:3000?roomId=${roomId}&userName=${userName}`);
+      const ws = new WebSocket(`ws://localhost:4000?roomId=${roomId}&userName=${userName}`);
       ws.onopen = () => {
         console.log('open');
         //ws.send('hello');

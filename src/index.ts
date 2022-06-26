@@ -3,7 +3,7 @@ import User from './models/Users/User';
 import * as SocketServer from './servers/socketServer';
 import * as ApiServer from './servers/apiServer';
 
-const WEBSOCKET_PORT = 3000;
+const WEBSOCKET_PORT = 4000;
 const API_PORT = 8080;
 
 // test
