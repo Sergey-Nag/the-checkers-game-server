@@ -57,6 +57,11 @@ export default class GameController {
     setTimeout(() => {
       this.addParticipantToRoom(user);
       this.sendBoard();
+
+      this.events.emit(
+        ResponsePayloadType.TO_ALL_IN_ROOM,
+        ResponsePayloadType.eat
+      );
     }, 0);
 
     return this.events;

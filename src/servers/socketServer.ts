@@ -47,7 +47,7 @@ const run = (port: number) => {
         }
       });
 
-      ws.on('close', (code, reason) => {
+      ws.on('close', () => {
         game.end();
       });
 
