@@ -1,35 +1,93 @@
+import { EventEmitter } from 'events';
 import { getRoomQueryParams } from '../helpers/serversHelpers';
 import Room from '../models/Room';
+import Player from '../models/Users/Player';
 import User from '../models/Users/User';
+import Watcher from '../models/Users/Watcher';
 import { CellAnswer, ColName } from '../types/CellTypes';
-import { RoomQueryParams } from '../types/RoomTypes';
+import { Color } from '../types/Color';
+import { RoomQueryParams, WSGame } from '../types/RoomTypes';
+import { ResponsePayloadType } from '../types/WSPayload';
 
 export default class GameController {
-  user!: User;
+  private params: RoomQueryParams;
+  events: EventEmitter;
+  user!: Player | Watcher;
   room!: Room;
 
-  constructor(private url: string) {
-    const params = getRoomQueryParams(url);
-
-    if (!this.isParamsValid(params)) throw 'Params is invalid';
-
-    this.init(params);
+  get isPlaying() {
+    return this.room.playersArr.every((pl) => !!pl);
   }
 
-  init({ userName, roomId }: RoomQueryParams) {
+  get isGameOver() {
+    return false;
+  }
+
+  constructor(private url: string) {
+    this.params = getRoomQueryParams(url);
+    this.events = new EventEmitter();
+
+    if (!this.isParamsValid(this.params)) throw 'Params is invalid';
+  }
+
+  init(ws: WSGame): EventEmitter {
+    const { userName, roomId } = this.params;
     const user = User.getOrCreate(userName);
     const room = Room.get(roomId);
 
     if (!room) throw 'Room not found';
 
-    this.user = user;
     this.room = room;
+
+    ws.gameData = {
+      roomId: this.params.roomId,
+      userId: user.id
+    };
+
+    setTimeout(() => {
+      this.addParticipantToRoom(user);
+      this.sendBoard();
+    }, 0);
+
+    return this.events;
+  }
+
+  gameOver() {}
+
+  end() {
+    this.room.removeParticipant(this.user);
+
+    this.events.emit(
+      ResponsePayloadType.TO_ALL_IN_ROOM_EXCEPT_CURRENT,
+      ResponsePayloadType.participantOut
+    );
+  }
+
+  sendBoard() {
+    this.events.emit(
+      ResponsePayloadType.TO_ALL_IN_ROOM,
+      ResponsePayloadType.board
+    );
+  }
+
+  addParticipantToRoom(user: User) {
+    const [participant, role] = this.room.addParticipant(user);
+
+    this.user = participant;
+
+    this.events.emit(ResponsePayloadType.participantRole, role);
+    this.events.emit(
+      ResponsePayloadType.TO_ALL_IN_ROOM_EXCEPT_CURRENT,
+      ResponsePayloadType.participantIn
+    );
   }
 
   moveFigures(
     from: { col: ColName; row: number },
     to: { col: ColName; row: number }
-  ): boolean {
+  ) {
+    if (this.user instanceof Watcher) return;
+
     const fromCell = this.room.board.getCell({
       col: from.col,
       row: from.row
@@ -41,15 +99,38 @@ export default class GameController {
 
     if (!fromCell || !toCell) throw "Cells didn't find";
 
-    const success = this.room.board.moveFigure(fromCell, toCell);
+    if (
+      this.user.color !== this.room.board.moveTurn ||
+      (fromCell.figure && fromCell?.figure.color !== this.user.color)
+    )
+      throw 'Wrong turn';
 
-    return success;
+    const movesToEat = this.room.board.getCellsHaveToEat();
+
+    if (movesToEat.length && movesToEat.every((c) => c !== fromCell))
+      throw 'Have to eat';
+
+    const result = this.room.board.moveFigure(fromCell, toCell);
+
+    if (!result) return false;
+
+    this.sendBoard();
+
+    if (result === 'eat')
+      this.events.emit(
+        ResponsePayloadType.TO_ALL_IN_ROOM,
+        ResponsePayloadType.eat
+      );
   }
 
-  getAvailableMovesFromCell(col: ColName, row: number): CellAnswer[] {
+  getAvailableMovesFromCell(col: ColName, row: number) {
+    if (this.user instanceof Watcher) return;
+
     const cell = this.room.board.getCell({ col, row });
 
     if (!cell) throw 'Cell not found';
+
+    if (!cell.figure || cell.color === Color.White) return [];
 
     const availableCells = [
       ...this.room.board
@@ -60,7 +141,13 @@ export default class GameController {
         .map((cell) => ({ ...cell, canEat: true } as CellAnswer))
     ];
 
-    return availableCells;
+    this.events.emit(ResponsePayloadType.highlight, availableCells);
+  }
+
+  getBoard(userId: string) {
+    const player = this.room.playersArr.find((pl) => pl && pl.id === userId);
+
+    return this.room.board.getCells(player?.color);
   }
 
   private isParamsValid(params: RoomQueryParams): boolean {

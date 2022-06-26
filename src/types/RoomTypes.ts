@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-interface WSConnect extends WebSocket {
+interface WSGame extends WebSocket {
   gameData: {
     roomId: string;
     userId: string;
@@ -18,4 +18,4 @@ enum ParticipantRole {
   Watcher = 'watcher'
 }
 
-export { WSConnect, RoomQueryParams, ParticipantRole };
+export { WSGame, RoomQueryParams, ParticipantRole };

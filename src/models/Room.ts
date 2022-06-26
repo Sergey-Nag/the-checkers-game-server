@@ -42,27 +42,45 @@ export default class Room {
     Room.add(this);
   }
 
-  addParticipant(user: User): ParticipantRole {
+  addParticipant(user: User): [Player | Watcher, ParticipantRole] {
     const U = this.findUser(user);
 
-    if (U && U instanceof Player) return U.color as unknown as ParticipantRole;
-    else if (U && U instanceof Watcher) return ParticipantRole.Watcher;
+    if (U && U instanceof Player)
+      return [U, U.color as unknown as ParticipantRole];
+    else if (U && U instanceof Watcher) return [U, ParticipantRole.Watcher];
 
     if (!this.players.white) {
       this.players.white = new Player(user, Color.White);
 
-      return ParticipantRole.White;
+      return [this.players.white, ParticipantRole.White];
     }
 
     if (!this.players.black) {
       this.players.black = new Player(user, Color.Black);
 
-      return ParticipantRole.Black;
+      return [this.players.black, ParticipantRole.Black];
     }
 
-    this.watchers.push(new Watcher(user));
+    const newWatcher = new Watcher(user);
+    this.watchers.push(newWatcher);
 
-    return ParticipantRole.Black;
+    return [newWatcher, ParticipantRole.Black];
+  }
+
+  removeParticipant(user: User) {
+    const U = this.findUser(user);
+
+    if (!U) return;
+
+    if (U instanceof Player) {
+      this.players[U.color] = null;
+
+      return;
+    }
+
+    const userIndex = this.watchers.findIndex((watcher) => watcher.id === U.id);
+
+    if (userIndex !== -1) this.watchers.splice(userIndex, 1);
   }
 
   private findUser(user: User) {

@@ -1,10 +1,14 @@
 enum ResponsePayloadType {
+  TO_EVERYONE = 'to-everyone',
+  TO_ALL_IN_ROOM = 'to-all-in-room',
+  TO_ALL_IN_ROOM_EXCEPT_CURRENT = 'to-all-in-room-except-current',
   error = 'error',
   board = 'board',
-  user = 'user',
-  room = 'room',
+  participantIn = 'participantIn',
+  participantOut = 'participantOut',
   participantRole = 'participantRole',
-  highlight = 'highlight'
+  highlight = 'highlight',
+  eat = 'eat'
 }
 
 enum RequestPayloadType {

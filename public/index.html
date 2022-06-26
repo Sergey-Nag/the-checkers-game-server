@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     :root {
       --black: #51505e;
       --white: #f0f0f0;
@@ -91,22 +96,70 @@
       content: '♔';
       font-size: 2rem;
     }
+    .stack {
+      position: absolute;
+      padding: 20px;
+      top: 0;
+    }
+    .stack:first-of-type {
+      left: 0;
+      border-right: 3px solid var(--black);
+    }
+    .stack:last-of-type {
+      right: 0;
+      border-left: 3px solid var(--black);
+    }
+    .stack .figure {
+      width: 70px;
+      height: 70px;
+    }
+    .stack .figure:nth-child(n + 2) {
+      margin-top: -50%;
+    }
   </style>
 </head>
 <body>
+  <div class="stack black">
+    <h3>Black (<span class="count">0</span>)</h3>
+    <div class="wrapp"></div>
+  </div>
   <div class="board"></div>
+  <div class="stack white">
+    <h3>White (<span class="count">0</span>)</h3>
+    <div class="wrapp"></div>
+  </div>
 
   <script>
+    const gameData = {
+      name: null,
+      role: null
+    };
     const board = document.querySelector('.board');
+    const figuresStack = document.querySelectorAll('.stack');
+
+    const updateTitle = () => {
+      console.log(gameData)
+      document.title = `${gameData.name} • [${gameData.role}]`;
+    }
+
+    const getFigure = (figure) => figure ? `<div class="figure ${figure.color} ${figure.isKing ? 'king' : ''}"></div>` : '';
 
     const getCell = (cell) => `<div data-col="${cell.col}" data-row="${cell.row}" class="cell ${cell.color}">
-      ${cell.figure ? `<div class="figure ${cell.figure.color} ${cell.figure.isKing ? 'king' : ''}"></div>` : ''}
+      ${getFigure(cell.figure)}
     </div>`;
 
     const renderBoard = (cells) => {
       const cellsHtml = cells.map((cell) => getCell(cell)).join('');
 
       board.innerHTML = cellsHtml;
+    }
+
+    const renderScore = (scores) => {
+      figuresStack[0].lastElementChild.innerHTML = scores.black.map((figure) => getFigure(figure)).join('');
+      figuresStack[0].querySelector('.count').textContent = scores.black.length;
+
+      figuresStack[1].lastElementChild.innerHTML = scores.white.map((figure) => getFigure(figure)).join('');
+      figuresStack[1].querySelector('.count').textContent = scores.white.length;
     }
 
     const removeHighlightFromCells = () => {
@@ -125,11 +178,16 @@
       const ws = new WebSocket(`ws://localhost:3000?roomId=${roomId}&userName=${userName}`);
       ws.onopen = () => {
         console.log('open');
-        ws.send('hello');
+        //ws.send('hello');
       }
       ws.onmessage = (e) => {
         const payload = parsePayload(e.data);
+        console.log(payload);
         switch (payload.type) {
+          case 'participantRole':
+            gameData.role = payload.message;
+            updateTitle();
+            break;
           case 'error':
             console.warn('Error:', payload.message);
             break;
@@ -139,6 +197,9 @@
           case 'highlight':
             highlightCells(payload.message);
             console.log(payload.message);
+            break;
+          case 'eat':
+            renderScore(payload.message)
             break;
           default:
             console.log(payload);
@@ -178,7 +239,11 @@
 
     fetch('http://localhost:8080/api/rooms')
       .then(data => data.json())
-      .then(data => connectToTheRoom(data[0].id, 'serg'));
+      .then(data => {
+        const name = prompt('Name');
+        gameData.name = name;
+        connectToTheRoom(data[0].id, name);
+      });
 
   </script>
 </body>

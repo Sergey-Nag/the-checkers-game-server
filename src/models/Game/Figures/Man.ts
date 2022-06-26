@@ -3,8 +3,6 @@ import Cell from '../Cell';
 
 export interface Figure {
   color: Color;
-  x: number;
-  y: number;
   isKing: boolean;
 
   hasEats(cells: Cell[]): boolean;
@@ -18,7 +16,7 @@ export interface Figure {
 export default class Man implements Figure {
   isKing = false;
 
-  constructor(public x: number, public y: number, public color: Color) {}
+  constructor(protected x: number, protected y: number, public color: Color) {}
 
   hasEats(cells: Cell[]): boolean {
     return cells.some((cell) => this.canEat(cell, cells));

@@ -3,10 +3,10 @@ import uniqid from 'uniqid';
 export default class User {
   static users: User[] = [];
 
-  static get(name: string, id?: string): User | null {
+  static get(nameOrId: string): User | null {
     return (
       this.users.find(
-        (user) => user.name === name && (id ? user.id === id : true)
+        (user) => user.name === nameOrId || user.id === nameOrId
       ) ?? null
     );
   }
@@ -18,7 +18,7 @@ export default class User {
   }
 
   static add(user: User) {
-    if (this.get(user.name, user.id)) return;
+    if (this.get(user.id)) return;
 
     this.users.push(user);
   }

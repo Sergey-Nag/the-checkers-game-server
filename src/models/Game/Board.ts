@@ -5,7 +5,7 @@ import Cell from './Cell';
 import { Figure } from './Figures/Man';
 
 export default class Board {
-  private _cells: Cell[] = [];
+  cells: Cell[] = [];
 
   eatenFigures: {
     white: Figure[];
@@ -17,35 +17,29 @@ export default class Board {
 
   moveTurn: Color = Color.White;
 
-  get cells() {
-    return this._cells;
-  }
-
   constructor() {
     this.setupCells();
 
-    this.placeFigure(1, 3, Color.Black);
-    this.placeFigure(5, 6, Color.White);
+    this.placeFigure(0, 3, Color.Black);
+    this.placeFigure(5, 8, Color.White);
+  }
 
-    (this.getCell({ col: 'g', row: 2 }) as Cell).figure = null;
-    this.getCell({ col: 'h', row: 1 })?.setFigure({ color: Color.Black });
-
-    this.cells
-      .filter((cell) => cell.figure && cell.figure.color === Color.White)
-      .forEach((cell) => cell.setFigure({ color: Color.White, isKing: true }));
+  getCells(userColor?: Color) {
+    return userColor && userColor === Color.Black
+      ? this.getFlippedCells()
+      : this.cells;
   }
 
   getCell(params: CellSearchParams): Cell | null {
     if ('x' in params)
       return (
-        this._cells.find(
-          (cell) => cell.x === params.x && cell.y === params.y
-        ) ?? null
+        this.cells.find((cell) => cell.x === params.x && cell.y === params.y) ??
+        null
       );
 
     if ('col' in params)
       return (
-        this._cells.find(
+        this.cells.find(
           (cell) => cell.col === params.col && cell.row === params.row
         ) ?? null
       );
@@ -53,7 +47,7 @@ export default class Board {
     return null;
   }
 
-  moveFigure(from: Cell, to: Cell) {
+  moveFigure(from: Cell, to: Cell): 'move' | 'eat' | false {
     if (
       from.color === Color.White ||
       !from.figure ||
@@ -73,7 +67,13 @@ export default class Board {
     return this.doMove(from, to);
   }
 
-  private doMove(from: Cell, to: Cell) {
+  getCellsHaveToEat(figureColor: Color = this.moveTurn) {
+    return this.cells
+      .filter((c) => c.figure && c.figure.color === figureColor)
+      .filter((c) => c.figure?.hasEats(this.cells));
+  }
+
+  private doMove(from: Cell, to: Cell): 'move' | 'eat' | false {
     if (!from.figure || to.figure) return false;
 
     const forEat = this.findEatenCell(from, to);
@@ -90,15 +90,17 @@ export default class Board {
     const isEaten = forEat && this.eatFigure(forEat);
     from.figure = null;
 
-    if (isEaten) {
-      // send eaten figures
+    let result: 'move' | 'eat' = 'move';
 
-      if ((to.figure as unknown as Figure).hasEats(this.cells)) return true;
+    if (isEaten) {
+      result = 'eat';
+
+      if ((to.figure as unknown as Figure).hasEats(this.cells)) return result;
     }
 
     this.swapTurn();
 
-    return true;
+    return result;
   }
 
   swapTurn() {
@@ -118,14 +120,14 @@ export default class Board {
   getAvailableMoves({ figure }: Cell): Cell[] {
     if (!figure) return [];
 
-    const availableCellsToEat = this._cells.filter((C) =>
-      (figure as Figure).canMoveToEat(C, this._cells)
+    const availableCellsToEat = this.cells.filter((C) =>
+      (figure as Figure).canMoveToEat(C, this.cells)
     );
 
     if (availableCellsToEat.length) return availableCellsToEat;
 
-    const availableCells = this._cells.filter((C) =>
-      (figure as Figure).canMove(C, this._cells)
+    const availableCells = this.cells.filter((C) =>
+      (figure as Figure).canMove(C, this.cells)
     );
 
     return availableCells;
@@ -134,8 +136,8 @@ export default class Board {
   getAvailableEats({ figure }: Cell): Cell[] {
     if (!figure) return [];
 
-    const availableCells = this._cells.filter((C) =>
-      (figure as Figure).canEat(C, this._cells)
+    const availableCells = this.cells.filter((C) =>
+      (figure as Figure).canEat(C, this.cells)
     );
 
     return availableCells;
@@ -147,10 +149,14 @@ export default class Board {
     return cells.find((cell) => from.figure?.canEat(cell, this.cells)) ?? null;
   }
 
+  private getFlippedCells() {
+    return [...this.cells].reverse();
+  }
+
   private setupCells() {
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
-        this._cells.push(new Cell(x, y));
+        this.cells.push(new Cell(x, y));
       }
     }
   }
