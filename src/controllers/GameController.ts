@@ -14,12 +14,22 @@ export default class GameController {
   events: EventEmitter;
   user!: Player | Watcher;
   room!: Room;
+  winner: Player | null = null;
 
   get isPlaying() {
-    return this.room.playersArr.every((pl) => !!pl);
+    return !this.winner && this.room.playersArr.every((pl) => !!pl);
   }
 
   get isGameOver() {
+    if (
+      Object.values(this.room.board.eatenFigures).some(
+        (figures) => figures.length === 12
+      )
+    )
+      return true;
+
+    if (!this.room.board.hasMoves(this.room.board.moveTurn)) return true;
+
     return false;
   }
 
@@ -52,9 +62,28 @@ export default class GameController {
     return this.events;
   }
 
-  gameOver() {}
+  gameOver() {
+    console.log('GAME OVER', this.room.board.eatenFigures);
+
+    const { eatenFigures } = this.room.board;
+    if (
+      eatenFigures.white.length < eatenFigures.black.length ||
+      !this.room.board.hasMoves(Color.Black)
+    ) {
+      this.winner = this.room.players.white;
+    } else {
+      this.winner = this.room.players.black;
+    }
+
+    this.events.emit(
+      ResponsePayloadType.TO_ALL_IN_ROOM,
+      ResponsePayloadType.gameOver
+    );
+  }
 
   end() {
+    console.log(this.room, this.user);
+
     this.room.removeParticipant(this.user);
 
     this.events.emit(

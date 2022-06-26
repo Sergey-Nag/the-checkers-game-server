@@ -18,6 +18,7 @@ const run = (port: number) => {
 
       ws.on('message', (data) => {
         try {
+          if (game.isGameOver) throw 'Game over';
           if (!game.isPlaying) throw 'Game is not started';
 
           const { type, message }: RequestPayload = JSON.parse(data.toString());
@@ -75,6 +76,12 @@ const run = (port: number) => {
                 payloadData = payload(
                   ResponsePayloadType.eat,
                   game.room.board.eatenFigures
+                );
+                break;
+              case ResponsePayloadType.gameOver:
+                payloadData = payload(
+                  ResponsePayloadType.gameOver,
+                  game.winner
                 );
                 break;
               default:
