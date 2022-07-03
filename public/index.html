@@ -15,12 +15,29 @@
       --black: #51505e;
       --white: #f0f0f0;
     }
-    .board {
+    .board-wrapp {
       width: 700px;
-      height: 700px;
+      padding-bottom: 700px;
+      position: relative;
       margin: 8vh auto 0;
+    }
+    .board {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-wrap: wrap;
+    }
+    .board::after {
+      content: attr(data-role);
+      display: block;
+      position: absolute;
+      bottom: -100px;
+      left: 0;
+      width: 100%;
+      text-align: center;
     }
     .cell {
       width: calc(100% / 8);
@@ -101,11 +118,11 @@
       padding: 20px;
       top: 0;
     }
-    .stack:first-of-type {
+    .stack.black {
       left: 0;
       border-right: 3px solid var(--black);
     }
-    .stack:last-of-type {
+    .stack.white {
       right: 0;
       border-left: 3px solid var(--black);
     }
@@ -116,14 +133,62 @@
     .stack .figure:nth-child(n + 2) {
       margin-top: -50%;
     }
+    .create-room {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #51505e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .btn {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    .role {
+      text-align: center;
+      padding-top: 20px;
+    }
+    @media (max-width: 900px) {
+      .board-wrapp {
+        width: 90%;
+        padding-bottom: 90%;
+        margin-bottom: 100px;
+      }
+      .stack {
+        position: relative;
+        border-left: none !important;
+        border-right: none !important;
+        border-top: 3px solid var(--black);
+      }
+      .stack .figure {
+        display: inline-block;
+        width: 45px;
+        height: 45px;
+      }
+      .stack .figure:nth-child(n + 2) {
+        margin-top: auto;
+        margin-left: -20px;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="create-room" style="display: none">
+    <button class="btn" id="createRoom">Create room</button>
+  </div>
+  <div class="board-wrapp">
+    <div class="board"></div>
+  </div>
   <div class="stack black">
     <h3>Black (<span class="count">0</span>)</h3>
     <div class="wrapp"></div>
   </div>
-  <div class="board"></div>
   <div class="stack white">
     <h3>White (<span class="count">0</span>)</h3>
     <div class="wrapp"></div>
@@ -131,11 +196,38 @@
 
   <script>
     const gameData = {
-      name: null,
       role: null
     };
+    
+    Object.defineProperty(gameData, 'name', {
+      get() {
+        if (!this._name) this._name = prompt('Username');
+
+        return this._name;
+      }
+    })
+
     const board = document.querySelector('.board');
     const figuresStack = document.querySelectorAll('.stack');
+    const createRoomWrapp = document.querySelector('.create-room');
+    const roleWrapp = document.querySelector('.role');
+
+    const setRole = (role) => {
+      board.dataset.role = role === 'watcher' ? role : `Player ${gameData.name} — ${role}`;
+    }
+    const showCreateRoom = () => {
+      createRoomWrapp.style.display = 'flex';
+      document.querySelector('#createRoom').addEventListener('click', () => {
+        fetch('http://localhost:8080/api/room', { method: 'POST' })
+          .then((data) => data.json())
+          .then((data) => {
+            console.log(data)
+            connectToTheRoom(data.id, gameData.name);
+
+            createRoomWrapp.style.display = 'none';
+          });
+      }, { once: true });
+    }
 
     const updateTitle = () => {
       console.log(gameData)
@@ -178,7 +270,6 @@
       const ws = new WebSocket(`ws://localhost:4000?roomId=${roomId}&userName=${userName}`);
       ws.onopen = () => {
         console.log('open');
-        //ws.send('hello');
       }
       ws.onmessage = (e) => {
         const payload = parsePayload(e.data);
@@ -187,6 +278,7 @@
           case 'participantRole':
             gameData.role = payload.message;
             updateTitle();
+            setRole(gameData.role);
             break;
           case 'error':
             console.warn('Error:', payload.message);
@@ -201,8 +293,6 @@
           case 'eat':
             renderScore(payload.message)
             break;
-          default:
-            console.log(payload);
         }
       }
       const selectedCells = {
@@ -240,10 +330,11 @@
     fetch('http://localhost:8080/api/rooms')
       .then(data => data.json())
       .then(data => {
-        const name = prompt('Name');
-        gameData.name = name;
-        connectToTheRoom(data[0].id, name);
-      });
+        connectToTheRoom(data[0].id, gameData.name);
+      })
+      .catch((e) => {
+        showCreateRoom();
+      })
 
   </script>
 </body>

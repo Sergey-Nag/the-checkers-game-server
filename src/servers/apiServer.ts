@@ -63,6 +63,12 @@ app.get('/api/room/:roomId', (req, res) => {
   res.send(room);
 });
 
+app.post('/api/room', (req, res) => {
+  const room = new Room();
+
+  res.send(room);
+});
+
 app.delete('/api/room/:roomId', (req, res) => {
   const { roomId } = req.params;
   const isRemoved = Room.remove(roomId);

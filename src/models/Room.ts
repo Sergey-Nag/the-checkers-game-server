@@ -76,7 +76,7 @@ export default class Room {
     const newWatcher = new Watcher(user);
     this.watchers.push(newWatcher);
 
-    return [newWatcher, ParticipantRole.Black];
+    return [newWatcher, ParticipantRole.Watcher];
   }
 
   removeParticipant(user: User) {
