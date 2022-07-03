@@ -1,0 +1,305 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Test API for the chackers game",
+    "version": "1.0.0",
+    "title": "Checkers API"
+  },
+  "host": "localhost:8080",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "users",
+      "description": "Users list"
+    },
+    {
+      "name": "user",
+      "description": "Specific user"
+    },
+    {
+      "name": "rooms",
+      "description": "Rooms list"
+    },
+    {
+      "name": "room",
+      "description": "Specific room"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get full list of users ",
+        "description": "Get full list of users",
+        "operationId": "getUsers",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/user/{userName}": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get user",
+        "description": "Find user with specified name",
+        "operationId": "getUser",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userName",
+            "in": "path",
+            "description": "Name to get user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Create or get an existing user",
+        "description": "Create or get an existing user and recieve user's info",
+        "operationId": "createUser",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "userName",
+            "in": "path",
+            "description": "Name to create user",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/rooms": {
+      "get": {
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Full list of available rooms",
+        "description": "Get full list of available rooms",
+        "operationId": "getRooms",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Room"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/room/{roomId}": {
+      "get": {
+        "tags": [
+          "room"
+        ],
+        "summary": "Specific room",
+        "description": "Get specific room by id",
+        "operationId": "getRoom",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Id of the room",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/Room"
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "room"
+        ],
+        "summary": "Remove a room",
+        "description": "Remove specific room by id",
+        "operationId": "removeRoom",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "description": "Id of the room",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Room has been deleted"
+          },
+          "404": {
+            "description": "Room not found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Room": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "players": {
+          "type": "object",
+          "properties": {
+            "black": {
+              "$ref": "#/definitions/User"
+            },
+            "white": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        },
+        "watchers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          }
+        },
+        "eatenFigures": {
+          "type": "object",
+          "properties": {
+            "white": {
+              "type":"array",
+              "items": {
+                "$ref": "#/definitions/Figure"
+              }
+            },
+            "black": {
+              "type":"array",
+              "items": {
+                "$ref": "#/definitions/Figure"
+              }
+            }
+          }
+        },
+        "moveTurn": {
+          "type": "string",
+          "enum": [
+            "black",
+            "white"
+          ]
+        }
+      }
+    },
+    "Figure": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "enum": [
+            "black",
+            "white"
+          ]
+        },
+        "isKing": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ApiErrorResponse": {
+      "type": "object",
+      "properties": {
+        "msg": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}

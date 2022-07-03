@@ -19,6 +19,17 @@ export default class Room {
     this.rooms.push(room);
   }
 
+  static remove(roomId: string): boolean {
+    const room = this.get(roomId);
+
+    if (!room) return false;
+
+    const roomI = this.rooms.findIndex(({ id }) => id === roomId);
+    this.rooms.splice(roomI, 1);
+
+    return true;
+  }
+
   players: {
     white: Player | null;
     black: Player | null;
@@ -29,6 +40,7 @@ export default class Room {
   id: string;
   moveTurn: Color = Color.White;
   watchers: Watcher[] = [];
+
   board: Board;
 
   get playersArr() {
