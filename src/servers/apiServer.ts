@@ -9,14 +9,20 @@ const app = express();
 
 app.use(cors());
 app.use(apiDocRouter);
+app.set('views', join(__dirname, '../../', 'public'));
+app.set('view engine', 'ejs');
 
 const run = (port: number) => {
-  app.listen(port, () => console.log(`Api server launched on port: ${port}`));
-};
+  const host = `http://${process.env.HOST ?? 'localhost'}:${port}`;
 
-app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, '../../', 'public', 'index.html'));
-});
+  app.get('/', (req, res) => {
+    res.render('index.ejs', { host });
+  });
+
+  app.listen(port, () =>
+    console.log(`Api server launched on the host: ${host}`)
+  );
+};
 
 app.get('/api/users', (req, res) => {
   const users = User.users;

@@ -218,7 +218,7 @@
     const showCreateRoom = () => {
       createRoomWrapp.style.display = 'flex';
       document.querySelector('#createRoom').addEventListener('click', () => {
-        fetch('http://localhost:8080/api/room', { method: 'POST' })
+        fetch('<%= host %>/api/room', { method: 'POST' })
           .then((data) => data.json())
           .then((data) => {
             console.log(data)
@@ -327,7 +327,7 @@
     }
     
 
-    fetch('http://localhost:8080/api/rooms')
+    fetch('<%= host %>/api/rooms')
       .then(data => data.json())
       .then(data => {
         connectToTheRoom(data[0].id, gameData.name);
