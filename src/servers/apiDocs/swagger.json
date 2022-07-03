@@ -211,6 +211,30 @@
           }
         }
       }
+    },
+    "/room": {
+      "post": {
+        "tags": [
+          "room"
+        ],
+        "summary": "New room",
+        "description": "Create a new room",
+        "operationId": "createRoom",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Room"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -274,6 +298,33 @@
         }
       }
     },
+    "Cell": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "enum": [
+            "black",
+            "white"
+          ]
+        },
+        "figure": {
+          "$ref": "#/definitions/Figure"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "col": {
+          "type": "string"
+        },
+        "row": {
+          "type": "number"
+        }
+      }
+    },
     "Figure": {
       "type": "object",
       "properties": {
@@ -286,6 +337,12 @@
         },
         "isKing": {
           "type": "boolean"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
         }
       }
     },
