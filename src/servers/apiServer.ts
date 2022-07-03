@@ -13,10 +13,15 @@ app.set('views', join(__dirname, '../../', 'public'));
 app.set('view engine', 'ejs');
 
 const run = (port: number) => {
-  const host = `http://${process.env.HOST ?? 'localhost'}:${port}`;
+  const host = `${process.env.HOST ? 'https' : 'http'}://${
+    process.env.HOST ?? 'localhost'
+  }:${port}`;
+  const wsHost = `${process.env.WEBSOCKET_PORT ? 'wss' : 'ws'}://${
+    process.env.HOST ?? 'localhost'
+  }:${process.env.WEBSOCKET_PORT ?? 4000}`;
 
   app.get('/', (req, res) => {
-    res.render('index.ejs', { host });
+    res.render('index.ejs', { host, wsHost });
   });
 
   app.listen(port, () =>
