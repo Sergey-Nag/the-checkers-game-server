@@ -1,12 +1,7 @@
-import * as SocketServer from './servers/socketServer';
-import * as ApiServer from './servers/apiServer';
-
-const WEBSOCKET_PORT = process.env.WEBSOCKET_PORT ?? 4000;
-const API_PORT = process.env.API_PORT ?? 8080;
+import { run } from './servers/servers';
 
 // test
 // new User('serg');
 // new Room();
 
-ApiServer.run(+API_PORT);
-SocketServer.run(+WEBSOCKET_PORT);
+run();

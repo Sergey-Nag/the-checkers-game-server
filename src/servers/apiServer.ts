@@ -5,6 +5,8 @@ import { join } from 'path';
 import { apiDocRouter } from './apiDocs/apiDocs';
 import User from '../models/Users/User';
 
+const API_PORT = process.env.API_PORT ?? 8080;
+
 const app = express();
 
 app.use(cors());
@@ -12,23 +14,17 @@ app.use(apiDocRouter);
 app.set('views', join(__dirname, '../../', 'public'));
 app.set('view engine', 'ejs');
 
-const run = (port: number) => {
-  const host = process.env.HOST
-    ? `https://${process.env.HOST}`
-    : 'http://localhost:' + port;
+const host = process.env.HOST
+  ? `https://${process.env.HOST}`
+  : 'http://localhost:' + API_PORT;
 
-  const wsHost = process.env.WEBSOCKET_PORT
-    ? `wss://${process.env.HOST}:${process.env.WEBSOCKET_PORT}`
-    : 'ws://localhost:4000';
+const wsHost = process.env.HOST
+  ? `wss://${process.env.HOST}:${API_PORT}`
+  : 'ws://localhost:8080';
 
-  app.get('/', (req, res) => {
-    res.render('index.ejs', { host, wsHost });
-  });
-
-  app.listen(port, () =>
-    console.log(`Api server launched on the host: ${host}:${port}`)
-  );
-};
+app.get('/', (req, res) => {
+  res.render('index.ejs', { host, wsHost });
+});
 
 app.get('/api/users', (req, res) => {
   const users = User.users;
@@ -94,4 +90,4 @@ app.delete('/api/room/:roomId', (req, res) => {
   res.sendStatus(200);
 });
 
-export { run };
+export { app };
