@@ -68,8 +68,6 @@ export default class GameController {
   }
 
   gameOver() {
-    console.log('GAME OVER', this.room.board.eatenFigures);
-
     const { eatenFigures } = this.room.board;
     if (
       eatenFigures.white.length < eatenFigures.black.length ||
@@ -87,8 +85,6 @@ export default class GameController {
   }
 
   end() {
-    console.log(this.room, this.user);
-
     this.room.removeParticipant(this.user);
 
     this.events.emit(
