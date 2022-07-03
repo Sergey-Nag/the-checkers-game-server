@@ -13,19 +13,20 @@ app.set('views', join(__dirname, '../../', 'public'));
 app.set('view engine', 'ejs');
 
 const run = (port: number) => {
-  const host = `${process.env.HOST ? 'https' : 'http'}://${
-    process.env.HOST ?? 'localhost'
-  }:${port}`;
-  const wsHost = `${process.env.WEBSOCKET_PORT ? 'wss' : 'ws'}://${
-    process.env.HOST ?? 'localhost'
-  }:${process.env.WEBSOCKET_PORT ?? 4000}`;
+  const host = process.env.HOST
+    ? `https://${process.env.HOST}`
+    : 'http://localhost:' + port;
+
+  const wsHost = process.env.WEBSOCKET_PORT
+    ? `wss://${process.env.HOST}:${process.env.WEBSOCKET_PORT}`
+    : 'ws://localhost:4000';
 
   app.get('/', (req, res) => {
     res.render('index.ejs', { host, wsHost });
   });
 
   app.listen(port, () =>
-    console.log(`Api server launched on the host: ${host}`)
+    console.log(`Api server launched on the host: ${host}:${port}`)
   );
 };
 
