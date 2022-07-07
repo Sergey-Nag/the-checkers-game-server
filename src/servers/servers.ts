@@ -1,5 +1,6 @@
 import { app } from './apiServer';
 import { server } from './socketServer';
+import './tgServer/tgBotServer';
 
 server.on('request', app);
 

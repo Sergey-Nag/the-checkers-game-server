@@ -14,7 +14,7 @@ export default class Cell {
   constructor(
     public x: number,
     public y: number,
-    public id = uniqid.process()
+    public id = 'C' + uniqid.process()
   ) {
     this.color = getColor(x, y);
     this.col = getColName(x);

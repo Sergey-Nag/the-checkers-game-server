@@ -11,10 +11,10 @@ export default class User {
     );
   }
 
-  static getOrCreate(name: string): User {
+  static getOrCreate(name: string, id?: string): User {
     const user = this.get(name);
 
-    return user ?? new User(name);
+    return user ?? new User(name, id);
   }
 
   static add(user: User) {
@@ -25,6 +25,7 @@ export default class User {
 
   id: string;
   name: string;
+  avatar_url?: string;
 
   constructor(name: string, id?: string) {
     this.name = name;

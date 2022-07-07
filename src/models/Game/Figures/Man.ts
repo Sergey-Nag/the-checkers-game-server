@@ -22,7 +22,7 @@ export default class Man implements Figure {
     protected x: number,
     protected y: number,
     public color: Color,
-    public id = uniqid.process()
+    public id = 'F' + uniqid.process()
   ) {}
 
   hasEats(cells: Cell[]): boolean {
