@@ -17,12 +17,13 @@ const wsHost = process.env.HOST
   : 'ws://localhost:8080';
 
 const app = express();
-
 app.use(cors());
 app.use(apiDocRouter);
 app.set('views', join(__dirname, '../../', 'public', 'test-app'));
 app.set('view engine', 'ejs');
-app.use('/tg-web-app', tgAppRouter(host, wsHost));
+const appEndpoint = '/tg-web-app';
+app.set('base', appEndpoint);
+app.use(appEndpoint, tgAppRouter(host, wsHost, appEndpoint));
 
 app.get('/', (req, res) => {
   res.render('index.ejs', { host, wsHost });
