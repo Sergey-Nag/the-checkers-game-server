@@ -77,7 +77,11 @@ bot.on('polling_error', (error) => {
   console.log(error);
 });
 
-const tgAppRouter = (host: string, wsHost: string): Router => {
+const tgAppRouter = (
+  host: string,
+  wsHost: string,
+  appEndpoint: string
+): Router => {
   const tgRouter = Router();
 
   tgRouter.use(
@@ -95,7 +99,7 @@ const tgAppRouter = (host: string, wsHost: string): Router => {
     (req, res) => {
       res.render(
         join(__dirname, '../../../', 'public', 'tg-web-app', 'index.ejs'),
-        { host, wsHost }
+        { host, wsHost, appEndpoint }
       );
     }
   );
