@@ -85,6 +85,8 @@ export default class GameController {
   }
 
   end() {
+    if (!this.room) return;
+
     this.room.removeParticipant(this.user);
 
     this.events.emit(
@@ -112,20 +114,11 @@ export default class GameController {
     );
   }
 
-  moveFigures(
-    from: { col: ColName; row: number },
-    to: { col: ColName; row: number }
-  ) {
+  moveFigures(from: { id: string }, to: { id: string }) {
     if (this.user instanceof Watcher) return;
 
-    const fromCell = this.room.board.getCell({
-      col: from.col,
-      row: from.row
-    });
-    const toCell = this.room.board.getCell({
-      col: to.col,
-      row: to.row
-    });
+    const fromCell = this.room.board.getCell(from.id);
+    const toCell = this.room.board.getCell(to.id);
 
     if (!fromCell || !toCell) throw "Cells didn't find";
 
@@ -153,10 +146,10 @@ export default class GameController {
       );
   }
 
-  getAvailableMovesFromCell(col: ColName, row: number) {
+  getAvailableMovesFromCell(id: string) {
     if (this.user instanceof Watcher) return;
 
-    const cell = this.room.board.getCell({ col, row });
+    const cell = this.room.board.getCell(id);
 
     if (!cell) throw 'Cell not found';
 

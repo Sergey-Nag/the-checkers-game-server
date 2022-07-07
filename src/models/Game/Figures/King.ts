@@ -4,8 +4,8 @@ import Man from './Man';
 
 export default class King extends Man {
   isKing = true;
-  constructor(x: number, y: number, color: Color) {
-    super(x, y, color);
+  constructor(x: number, y: number, color: Color, id?: string) {
+    super(x, y, color, id);
   }
 
   canMoveToEat(target: Cell, cells: Cell[]) {

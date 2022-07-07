@@ -27,8 +27,8 @@ wss.on('connection', (ws: WSGame, req) => {
 
         switch (type) {
           case RequestPayloadType.highlight: {
-            const { col, row } = message.from;
-            game.getAvailableMovesFromCell(col, row);
+            const { id } = message.from;
+            game.getAvailableMovesFromCell(id);
             break;
           }
           case RequestPayloadType.move: {

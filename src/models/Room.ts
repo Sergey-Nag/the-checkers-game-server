@@ -98,7 +98,7 @@ export default class Room {
   private findUser(user: User) {
     return (
       [...this.watchers, ...this.playersArr].find(
-        (u) => u && u.id === user.id
+        (u) => u && u.id === user?.id
       ) ?? null
     );
   }
