@@ -20,9 +20,9 @@ const app = express();
 
 app.use(cors());
 app.use(apiDocRouter);
-app.use('/tg-web-app', tgAppRouter(host, wsHost));
-app.set('views', join(__dirname, '../../', 'public'));
+app.set('views', join(__dirname, '../../', 'public', 'test-app'));
 app.set('view engine', 'ejs');
+app.use('/tg-web-app', tgAppRouter(host, wsHost));
 
 app.get('/', (req, res) => {
   res.render('index.ejs', { host, wsHost });

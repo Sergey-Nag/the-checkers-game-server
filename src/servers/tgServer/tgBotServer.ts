@@ -1,19 +1,17 @@
 import express, { Router } from 'express';
-import TelegramBot, {
-  EditMessageCaptionOptions,
-  EditMessageTextOptions,
-  SendMessageOptions
-} from 'node-telegram-bot-api';
+import TelegramBot, { SendMessageOptions } from 'node-telegram-bot-api';
 import Room from '../../models/Room';
 import TGController from './TGController';
 import CallbackData from './types/CallbackData';
 import Command from './types/Command';
 import { join } from 'path';
 
-const TOKEN =
-  process.env.TG_TOKEN ?? '772355856:AAF7Lx1ivTIyWz28IQ_ZLw2Ayea3C6G-0zs';
+const TOKEN = process.env.TG_TOKEN;
+
+if (!TOKEN) throw new Error('TOKEN not provided');
 
 const bot = new TelegramBot(TOKEN, { polling: true });
+console.log(process.env.TEST);
 
 bot.on('message', (msg, meta) => {
   if (msg.text && /^\//.test(msg.text)) return;
@@ -84,7 +82,9 @@ const tgAppRouter = (host: string, wsHost: string): Router => {
 
   tgRouter.use(
     '/assets',
-    express.static(join(__dirname, 'tgWebApp', 'assets'))
+    express.static(
+      join(__dirname, '../../../', 'public', 'tg-web-app', 'assets')
+    )
   );
   tgRouter.use(
     '/',
@@ -93,7 +93,10 @@ const tgAppRouter = (host: string, wsHost: string): Router => {
       next();
     },
     (req, res) => {
-      res.sendFile(join(__dirname, 'tgWebApp', 'index.html'));
+      res.render(
+        join(__dirname, '../../../', 'public', 'tg-web-app', 'index.ejs'),
+        { host, wsHost }
+      );
     }
   );
 
