@@ -11,7 +11,7 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
-  "ignorePatterns": ["public/"],
+  "ignorePatterns": ["public/", "build/", "node_modules"],
   "rules": { 
     // "no-console": 2
     "newline-before-return": "warn",

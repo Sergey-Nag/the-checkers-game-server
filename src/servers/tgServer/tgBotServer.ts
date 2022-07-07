@@ -11,9 +11,8 @@ const TOKEN = process.env.TG_TOKEN;
 if (!TOKEN) throw new Error('TOKEN not provided');
 
 const bot = new TelegramBot(TOKEN, { polling: true });
-console.log(process.env.TEST);
 
-bot.on('message', (msg, meta) => {
+bot.on('message', (msg, _meta) => {
   if (msg.text && /^\//.test(msg.text)) return;
 
   bot.sendMessage(msg.chat.id, 'hello fellow');
@@ -36,6 +35,7 @@ bot.onText(/^\/(.+)/, (msg, match) => {
               ...TGController.getRoomMessage<SendMessageOptions>(room)
             );
           });
+
           return;
         }
 

@@ -1,5 +1,4 @@
 import {
-  InlineKeyboardButton,
   InlineKeyboardMarkup,
   SendMessageOptions
 } from 'node-telegram-bot-api';
