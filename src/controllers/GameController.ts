@@ -4,7 +4,7 @@ import Room from '../models/Room';
 import Player from '../models/Users/Player';
 import User from '../models/Users/User';
 import Watcher from '../models/Users/Watcher';
-import { CellAnswer, ColName } from '../types/CellTypes';
+import { CellAnswer } from '../types/CellTypes';
 import { Color } from '../types/Color';
 import { RoomQueryParams, WSGame } from '../types/RoomTypes';
 import { ResponsePayloadType } from '../types/WSPayload';

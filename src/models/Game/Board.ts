@@ -1,5 +1,4 @@
 import { getDiagonalCellsBetween } from '../../helpers/cellHelpers';
-import { CellSearchParams } from '../../types/CellTypes';
 import { Color } from '../../types/Color';
 import Cell from './Cell';
 import { Figure } from './Figures/Man';
