@@ -4,15 +4,9 @@ import Room from '../models/Room';
 import { join } from 'path';
 import { apiDocRouter } from './apiDocs/apiDocs';
 import User from '../models/Users/User';
+import { tgAppRouter } from './tgServer/tgBotServer';
 
 const API_PORT = process.env.API_PORT ?? 8080;
-
-const app = express();
-
-app.use(cors());
-app.use(apiDocRouter);
-app.set('views', join(__dirname, '../../', 'public'));
-app.set('view engine', 'ejs');
 
 const host = process.env.HOST
   ? `https://${process.env.HOST}`
@@ -21,6 +15,14 @@ const host = process.env.HOST
 const wsHost = process.env.HOST
   ? `wss://${process.env.HOST}:${API_PORT}`
   : 'ws://localhost:8080';
+
+const app = express();
+
+app.use(cors());
+app.use(apiDocRouter);
+app.use('/tg-web-app', tgAppRouter(host, wsHost));
+app.set('views', join(__dirname, '../../', 'public'));
+app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
   res.render('index.ejs', { host, wsHost });

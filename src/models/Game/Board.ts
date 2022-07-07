@@ -1,5 +1,4 @@
 import { getDiagonalCellsBetween } from '../../helpers/cellHelpers';
-import { CellSearchParams } from '../../types/CellTypes';
 import { Color } from '../../types/Color';
 import Cell from './Cell';
 import { Figure } from './Figures/Man';
@@ -30,21 +29,8 @@ export default class Board {
       : this.cells;
   }
 
-  getCell(params: CellSearchParams): Cell | null {
-    if ('x' in params)
-      return (
-        this.cells.find((cell) => cell.x === params.x && cell.y === params.y) ??
-        null
-      );
-
-    if ('col' in params)
-      return (
-        this.cells.find(
-          (cell) => cell.col === params.col && cell.row === params.row
-        ) ?? null
-      );
-
-    return null;
+  getCell(id: string): Cell | null {
+    return this.cells.find((cell) => cell.id === id) ?? null;
   }
 
   hasMoves(figuresColor: Color): boolean {
@@ -88,7 +74,11 @@ export default class Board {
       (from.figure.color === Color.White && to.row === 1) ||
       (from.figure.color === Color.Black && to.row === 8)
     ) {
-      to.setFigure({ color: from.figure.color, isKing: true });
+      to.setFigure({
+        color: from.figure.color,
+        isKing: true,
+        id: from.figure.id
+      });
     } else {
       to.setFigure(from.figure);
     }
@@ -170,7 +160,7 @@ export default class Board {
   private placeFigure(from: number, to: number, color: Color) {
     for (let y = from; y < to; y++) {
       for (let x = 0; x < 8; x++) {
-        const cell = this.getCell({ x, y });
+        const cell = this.cells.find((cell) => cell.x === x && cell.y === y);
 
         if (cell && cell.color === Color.Black) cell.setFigure({ color });
       }

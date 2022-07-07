@@ -234,9 +234,9 @@
       document.title = `${gameData.name} • [${gameData.role}]`;
     }
 
-    const getFigure = (figure) => figure ? `<div class="figure ${figure.color} ${figure.isKing ? 'king' : ''}"></div>` : '';
+    const getFigure = (figure) => figure ? `<div id="${figure.id}" class="figure ${figure.color} ${figure.isKing ? 'king' : ''}"></div>` : '';
 
-    const getCell = (cell) => `<div data-col="${cell.col}" data-row="${cell.row}" class="cell ${cell.color}">
+    const getCell = (cell) => `<div id="${cell.id}" class="cell ${cell.color}">
       ${getFigure(cell.figure)}
     </div>`;
 
@@ -260,7 +260,7 @@
 
     const highlightCells = (cells) => {
       removeHighlightFromCells();
-      cells.forEach((cell) => board.querySelector(`.cell[data-row="${cell.row}"][data-col="${cell.col}"]`).classList.add(cell.canEat ? 'eat' : 'highlight'));
+      cells.forEach((cell) => board.querySelector(`#${cell.id}`).classList.add(cell.canEat ? 'eat' : 'highlight'));
     }
 
     const payload = (type, message) => JSON.stringify({ type, message });
@@ -299,14 +299,14 @@
         from: null,
         to: null
       };
-      const onCellClick = ({col, row}) => {
+      const onCellClick = (id) => {
         if (!selectedCells.from) {
-          selectedCells.from = { col, row: +row };
-        } else if (selectedCells.from?.col === col && selectedCells.from?.row === +row) {
+          selectedCells.from = {id};
+        } else if (selectedCells.from.id === id) {
           selectedCells.from = selectedCells.to = null;
           removeHighlightFromCells();
         } else if (!selectedCells.to) {
-          selectedCells.to = { col, row: +row };
+          selectedCells.to = {id};
         }
 
         if (selectedCells.from && !selectedCells.to) {
@@ -322,7 +322,7 @@
 
       board.addEventListener('click', ({target}) => {
         const cell = target.closest('.cell');
-        if (cell) onCellClick(cell.dataset);
+        if (cell) onCellClick(cell.id);
       })
     }
     

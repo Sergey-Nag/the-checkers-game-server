@@ -1,9 +1,11 @@
+import uniqid from 'uniqid';
 import { Color } from '../../../types/Color';
 import Cell from '../Cell';
 
 export interface Figure {
   color: Color;
   isKing: boolean;
+  id: string;
 
   hasEats(cells: Cell[]): boolean;
   hasMoves(cells: Cell[]): boolean;
@@ -16,7 +18,12 @@ export interface Figure {
 export default class Man implements Figure {
   isKing = false;
 
-  constructor(protected x: number, protected y: number, public color: Color) {}
+  constructor(
+    protected x: number,
+    protected y: number,
+    public color: Color,
+    public id = 'F' + uniqid.process()
+  ) {}
 
   hasEats(cells: Cell[]): boolean {
     return cells.some((cell) => this.canEat(cell, cells));

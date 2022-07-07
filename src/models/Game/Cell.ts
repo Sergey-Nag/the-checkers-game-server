@@ -1,3 +1,4 @@
+import uniqid from 'uniqid';
 import { getColName, getColor } from '../../helpers/cellHelpers';
 import { ColName } from '../../types/CellTypes';
 import { Color } from '../../types/Color';
@@ -10,15 +11,27 @@ export default class Cell {
   row: number;
   figure: Figure | null = null;
 
-  constructor(public x: number, public y: number) {
+  constructor(
+    public x: number,
+    public y: number,
+    public id = 'C' + uniqid.process()
+  ) {
     this.color = getColor(x, y);
     this.col = getColName(x);
     this.row = y + 1;
   }
 
-  setFigure({ color, isKing }: { color: Color; isKing?: boolean }) {
+  setFigure({
+    color,
+    isKing,
+    id
+  }: {
+    color: Color;
+    isKing?: boolean;
+    id?: string;
+  }) {
     this.figure = isKing
-      ? new King(this.x, this.y, color)
-      : new Man(this.x, this.y, color);
+      ? new King(this.x, this.y, color, id)
+      : new Man(this.x, this.y, color, id);
   }
 }
