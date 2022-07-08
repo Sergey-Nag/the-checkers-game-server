@@ -1,6 +1,7 @@
 enum Command {
   Start = 'start',
-  Rooms = 'rooms'
+  Rooms = 'rooms',
+  _TestApiBot = 'test'
 }
 
 export default Command;

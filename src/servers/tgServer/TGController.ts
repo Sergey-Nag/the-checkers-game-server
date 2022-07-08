@@ -50,6 +50,27 @@ export default class TGController {
     ];
   }
 
+  static getTestMessage(): [string, SendMessageOptions] {
+    return [
+      '`Test telegram web app api`',
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Go to test',
+                web_app: {
+                  url: `${WEB_APP_HOST}/tg-test`
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ];
+  }
+
   static getNoRoomsMessage(): [string, SendMessageOptions] {
     return [
       '*No rooms*',
