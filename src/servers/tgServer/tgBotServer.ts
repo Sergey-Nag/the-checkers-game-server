@@ -42,6 +42,10 @@ bot.onText(/^\/(.+)/, (msg, match) => {
         bot.sendMessage(chatId, ...TGController.getNoRoomsMessage());
       }
       break;
+    case Command._TestApiBot: {
+      bot.sendMessage(chatId, ...TGController.getTestMessage());
+      break;
+    }
   }
 });
 

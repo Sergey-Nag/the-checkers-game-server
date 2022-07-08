@@ -1,7 +1,3 @@
-// enum CellCol {
-//   '0' = 'a'
-// }
-
 import Cell from '../models/Game/Cell';
 
 type ColName = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';

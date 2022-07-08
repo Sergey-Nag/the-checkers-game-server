@@ -55,23 +55,42 @@ wss.on('connection', (ws: WSGame, req) => {
 
     game
       .init(ws)
+      .on(ResponsePayloadType.gameStatus, () => {
+        ws.send(payload(ResponsePayloadType.gameStatus, game.getGameStatus()));
+      })
       .on(ResponsePayloadType.highlight, (cells: CellAnswer) => {
         ws.send(payload(ResponsePayloadType.highlight, cells));
       })
-      .on(ResponsePayloadType.participantRole, (role: ParticipantRole) => {
-        ws.send(payload(ResponsePayloadType.participantRole, role));
+      .on(ResponsePayloadType.participant, () => {
+        ws.send(
+          payload(ResponsePayloadType.participant, game.getParticipants())
+        );
       })
       .on(ResponsePayloadType.TO_ALL_IN_ROOM, (type: ResponsePayloadType) => {
+        console.log(type, wss.clients);
+
         wss.clients.forEach((client) => {
-          if (client.gameData.roomId !== game.room.id) return;
+          if (client.gameData?.roomId !== game.room.id) return;
 
           let payloadData: string | null;
 
           switch (type) {
+            case ResponsePayloadType.gameStatus:
+              payloadData = payload(
+                ResponsePayloadType.gameStatus,
+                game.getGameStatus()
+              );
+              break;
             case ResponsePayloadType.board:
               payloadData = payload(
                 ResponsePayloadType.board,
                 game.getBoard(client.gameData.userId)
+              );
+              break;
+            case ResponsePayloadType.participant:
+              payloadData = payload(
+                ResponsePayloadType.participant,
+                game.getParticipants()
               );
               break;
             case ResponsePayloadType.eat:
@@ -95,6 +114,7 @@ wss.on('connection', (ws: WSGame, req) => {
         (type: ResponsePayloadType) => {
           wss.clients.forEach((client) => {
             if (
+              !client.gameData.roomId ||
               client.gameData.roomId !== game.room.id ||
               client.gameData.userId === game.user.id
             )
@@ -103,16 +123,10 @@ wss.on('connection', (ws: WSGame, req) => {
             let payloadData: string | null;
 
             switch (type) {
-              case ResponsePayloadType.participantIn:
+              case ResponsePayloadType.participant:
                 payloadData = payload(
-                  ResponsePayloadType.participantIn,
-                  game.user
-                );
-                break;
-              case ResponsePayloadType.participantOut:
-                payloadData = payload(
-                  ResponsePayloadType.participantOut,
-                  game.user
+                  ResponsePayloadType.participant,
+                  game.getParticipants()
                 );
                 break;
               default:

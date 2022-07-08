@@ -4,11 +4,10 @@ enum ResponsePayloadType {
   TO_ALL_IN_ROOM_EXCEPT_CURRENT = 'to-all-in-room-except-current',
   error = 'error',
   board = 'board',
-  participantIn = 'participantIn',
-  participantOut = 'participantOut',
-  participantRole = 'participantRole',
+  participant = 'participant',
   highlight = 'highlight',
   eat = 'eat',
+  gameStatus = 'gameStatus',
   gameOver = 'gameOver'
 }
 

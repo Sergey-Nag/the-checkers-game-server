@@ -6,6 +6,7 @@ import User from '../models/Users/User';
 import Watcher from '../models/Users/Watcher';
 import { CellAnswer } from '../types/CellTypes';
 import { Color } from '../types/Color';
+import { GameStatus } from '../types/GameTypes';
 import { RoomQueryParams, WSGame } from '../types/RoomTypes';
 import { ResponsePayloadType } from '../types/WSPayload';
 
@@ -57,6 +58,7 @@ export default class GameController {
     setTimeout(() => {
       this.addParticipantToRoom(user);
       this.sendBoard();
+      this.sendGameStatus(false);
 
       this.events.emit(
         ResponsePayloadType.TO_ALL_IN_ROOM,
@@ -65,6 +67,14 @@ export default class GameController {
     }, 0);
 
     return this.events;
+  }
+
+  getGameStatus(): GameStatus {
+    if (this.isGameOver) return GameStatus.GameOver;
+
+    if (this.isPlaying) return GameStatus.Play;
+
+    return GameStatus.GameNotStarted;
   }
 
   gameOver() {
@@ -91,7 +101,7 @@ export default class GameController {
 
     this.events.emit(
       ResponsePayloadType.TO_ALL_IN_ROOM_EXCEPT_CURRENT,
-      ResponsePayloadType.participantOut
+      ResponsePayloadType.participant
     );
   }
 
@@ -102,15 +112,27 @@ export default class GameController {
     );
   }
 
+  sendGameStatus(toAll: boolean) {
+    if (toAll) {
+      this.events.emit(
+        ResponsePayloadType.TO_ALL_IN_ROOM,
+        ResponsePayloadType.gameStatus
+      );
+
+      return;
+    }
+
+    this.events.emit(ResponsePayloadType.gameStatus);
+  }
+
   addParticipantToRoom(user: User) {
     const [participant, role] = this.room.addParticipant(user);
 
     this.user = participant;
 
-    this.events.emit(ResponsePayloadType.participantRole, role);
     this.events.emit(
-      ResponsePayloadType.TO_ALL_IN_ROOM_EXCEPT_CURRENT,
-      ResponsePayloadType.participantIn
+      ResponsePayloadType.TO_ALL_IN_ROOM,
+      ResponsePayloadType.participant
     );
   }
 
@@ -171,6 +193,12 @@ export default class GameController {
     const player = this.room.playersArr.find((pl) => pl && pl.id === userId);
 
     return this.room.board.getCells(player?.color);
+  }
+
+  getParticipants() {
+    const { players, watchers } = this.room;
+
+    return { players, watchers };
   }
 
   private isParamsValid(params: RoomQueryParams): boolean {
