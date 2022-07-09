@@ -52,11 +52,9 @@ export default class TGController {
           [
             {
               text: 'Join room',
-              // callback_data: 'asd',
-              switch_inline_query: 'share'
-              // web_app: {
-              //   url: `${WEB_APP_HOST}/game/${data}`
-              // }
+              web_app: {
+                url: `${WEB_APP_HOST}/game/${data}`
+              }
             }
           ]
         ]
