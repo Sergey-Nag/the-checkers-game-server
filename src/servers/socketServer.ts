@@ -2,7 +2,7 @@ import { Server } from 'ws';
 import GameController from '../controllers/GameController';
 import { errorPayload, payload } from '../helpers/serversHelpers';
 import { CellAnswer } from '../types/CellTypes';
-import { ParticipantRole, WSGame } from '../types/RoomTypes';
+import { WSGame } from '../types/RoomTypes';
 import { createServer } from 'http';
 import {
   RequestPayload,
@@ -76,7 +76,7 @@ wss.on('connection', (ws: WSGame, req) => {
       .on(ResponsePayloadType.gameOver, () => {
         console.log('to single');
 
-        ws.send(payload(ResponsePayloadType.gameOver, game.results));
+        ws.send(payload(ResponsePayloadType.gameOver, game.getGameResult()));
       })
       .on(ResponsePayloadType.TO_ALL_IN_ROOM, (type: ResponsePayloadType) => {
         wss.clients.forEach((client) => {
@@ -111,7 +111,10 @@ wss.on('connection', (ws: WSGame, req) => {
               break;
             case ResponsePayloadType.gameOver:
               console.log('to all');
-              payloadData = payload(ResponsePayloadType.gameOver, game.results);
+              payloadData = payload(
+                ResponsePayloadType.gameOver,
+                game.getGameResult()
+              );
               break;
             case ResponsePayloadType.moveTurn:
               payloadData = payload(

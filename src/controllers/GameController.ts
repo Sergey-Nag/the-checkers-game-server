@@ -15,18 +15,11 @@ export default class GameController {
   events: EventEmitter;
   user!: Player | Watcher;
   room!: Room;
-  results: {
-    winnerColor: Color;
-    winner: Player;
-    loser: Player;
-    score: {
-      blackFigures: number;
-      whiteFigures: number;
-    };
-  } | null = null;
 
   get isPlaying() {
-    return !this.results?.winner && this.room.playersArr.every((pl) => !!pl);
+    return (
+      !this.room.results?.winner && this.room.playersArr.every((pl) => !!pl)
+    );
   }
 
   get isGameOver() {
@@ -41,7 +34,7 @@ export default class GameController {
 
     if (!this.room.board.hasMoves(this.room.board.moveTurn)) return true;
 
-    return !!this.results;
+    return !!this.room.results;
   }
 
   constructor(private url: string) {
@@ -96,6 +89,10 @@ export default class GameController {
 
   getMoveTurn() {
     return this.room.board.moveTurn;
+  }
+
+  getGameResult() {
+    return this.room.results;
   }
 
   gameOver(sendToAll = true) {
@@ -241,7 +238,11 @@ export default class GameController {
     let winner: Player;
     let loser: Player;
 
-    if (this.results || !this.room.players.black || !this.room.players.white)
+    if (
+      this.room.results ||
+      !this.room.players.black ||
+      !this.room.players.white
+    )
       return;
 
     if (
@@ -255,13 +256,13 @@ export default class GameController {
       loser = this.room.players.white;
     }
 
-    this.results = {
+    this.room.results = {
       winner,
       loser,
       winnerColor: winner.color,
       score: {
-        blackFigures: this.room.board.eatenFigures.black.length,
-        whiteFigures: this.room.board.eatenFigures.white.length
+        black: this.room.board.eatenFigures.white.length,
+        white: this.room.board.eatenFigures.black.length
       }
     };
   }

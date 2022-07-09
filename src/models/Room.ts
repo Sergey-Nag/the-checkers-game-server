@@ -40,6 +40,15 @@ export default class Room {
   id: string;
   watchers: Watcher[] = [];
   board: Board;
+  results: {
+    winnerColor: Color;
+    winner: Player;
+    loser: Player;
+    score: {
+      black: number;
+      white: number;
+    };
+  } | null = null;
 
   get playersArr() {
     return Object.values(this.players);
