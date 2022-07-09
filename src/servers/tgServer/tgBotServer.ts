@@ -6,7 +6,6 @@ import CallbackData from './types/CallbackData';
 import Command from './types/Command';
 import { join } from 'path';
 import InlineQuery from './types/InlineQuery';
-import uniqid from 'uniqid';
 
 const TOKEN = process.env.TG_TOKEN;
 
@@ -22,7 +21,7 @@ bot.on('message', (msg, _meta) => {
 
 bot.onText(/^\/(.+)/, (msg, match) => {
   if (!match) return;
-  const [_, command] = match;
+  const command = match[1];
   const chatId = msg.chat.id;
 
   switch (command) {
@@ -88,13 +87,13 @@ bot.on('callback_query', (q) => {
 });
 
 bot.on('inline_query', (q) => {
-  const { query, id, from } = q;
+  const { query, id } = q;
 
   switch (query) {
     case InlineQuery.Game: {
       bot.answerInlineQuery(
         id,
-        ...TGController.getAnswerOnInlineQueryMessage(from.id)
+        ...TGController.getAnswerOnInlineQueryMessage()
       );
       break;
     }

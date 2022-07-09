@@ -2,18 +2,16 @@ import TelegramBot, {
   InlineKeyboardMarkup,
   SendMessageOptions
 } from 'node-telegram-bot-api';
-import uniqid from 'uniqid';
 import Room from '../../models/Room';
 import CallbackData from './types/CallbackData';
 
 const WEB_APP_HOST = `https://${process.env.HOST}/tg-web-app`;
 
-const roomsFromInlineQuery = new Map<number, Room>();
-
 export default class TGController {
-  static getAnswerOnInlineQueryMessage(
-    userId: number
-  ): [TelegramBot.InlineQueryResult[], TelegramBot.AnswerInlineQueryOptions] {
+  static getAnswerOnInlineQueryMessage(): [
+    TelegramBot.InlineQueryResult[],
+    TelegramBot.AnswerInlineQueryOptions
+  ] {
     const room = new Room();
 
     return [
