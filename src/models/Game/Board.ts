@@ -34,9 +34,14 @@ export default class Board {
   }
 
   hasMoves(figuresColor: Color): boolean {
-    return this.cells
-      .filter((cell) => cell.figure && cell.figure.color === figuresColor)
-      .some((cell) => cell.figure?.hasMoves(this.cells));
+    return (
+      this.cells
+        .filter((cell) => cell.figure && cell.figure.color === figuresColor)
+        .some((cell) => cell.figure?.hasMoves(this.cells)) ||
+      this.cells
+        .filter((cell) => cell.figure && cell.figure.color === figuresColor)
+        .some((cell) => cell.figure?.hasEats(this.cells))
+    );
   }
 
   moveFigure(from: Cell, to: Cell): 'move' | 'eat' | false {

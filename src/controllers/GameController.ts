@@ -15,13 +15,23 @@ export default class GameController {
   events: EventEmitter;
   user!: Player | Watcher;
   room!: Room;
-  winner: Player | null = null;
+  results: {
+    winnerColor: Color;
+    winner: Player;
+    loser: Player;
+    score: {
+      blackFigures: number;
+      whiteFigures: number;
+    };
+  } | null = null;
 
   get isPlaying() {
-    return !this.winner && this.room.playersArr.every((pl) => !!pl);
+    return !this.results?.winner && this.room.playersArr.every((pl) => !!pl);
   }
 
   get isGameOver() {
+    if (!this.room) return false;
+
     if (
       Object.values(this.room.board.eatenFigures).some(
         (figures) => figures.length === 12
@@ -31,7 +41,7 @@ export default class GameController {
 
     if (!this.room.board.hasMoves(this.room.board.moveTurn)) return true;
 
-    return false;
+    return !!this.results;
   }
 
   constructor(private url: string) {
@@ -64,6 +74,13 @@ export default class GameController {
         ResponsePayloadType.TO_ALL_IN_ROOM,
         ResponsePayloadType.eat
       );
+
+      if (this.isPlaying) {
+        this.events.emit(
+          ResponsePayloadType.TO_ALL_IN_ROOM,
+          ResponsePayloadType.moveTurn
+        );
+      }
     }, 0);
 
     return this.events;
@@ -77,21 +94,23 @@ export default class GameController {
     return GameStatus.GameNotStarted;
   }
 
-  gameOver() {
-    const { eatenFigures } = this.room.board;
-    if (
-      eatenFigures.white.length < eatenFigures.black.length ||
-      !this.room.board.hasMoves(Color.Black)
-    ) {
-      this.winner = this.room.players.white;
-    } else {
-      this.winner = this.room.players.black;
-    }
+  getMoveTurn() {
+    return this.room.board.moveTurn;
+  }
 
-    this.events.emit(
-      ResponsePayloadType.TO_ALL_IN_ROOM,
-      ResponsePayloadType.gameOver
-    );
+  gameOver(sendToAll = true) {
+    this.setGameResults();
+
+    this.sendGameStatus(sendToAll);
+    if (sendToAll) {
+      this.events.emit(
+        ResponsePayloadType.TO_ALL_IN_ROOM,
+        ResponsePayloadType.gameOver
+      );
+    } else {
+      this.events.emit(ResponsePayloadType.gameOver);
+    }
+    console.log('GAMEOVER to all?', sendToAll);
   }
 
   end() {
@@ -152,8 +171,10 @@ export default class GameController {
 
     const movesToEat = this.room.board.getCellsHaveToEat();
 
-    if (movesToEat.length && movesToEat.every((c) => c !== fromCell))
+    if (movesToEat.length && movesToEat.every((c) => c !== fromCell)) {
+      this.events.emit(ResponsePayloadType.moveTurn);
       throw 'Have to eat';
+    }
 
     const result = this.room.board.moveFigure(fromCell, toCell);
 
@@ -166,6 +187,11 @@ export default class GameController {
         ResponsePayloadType.TO_ALL_IN_ROOM,
         ResponsePayloadType.eat
       );
+
+    this.events.emit(
+      ResponsePayloadType.TO_ALL_IN_ROOM,
+      ResponsePayloadType.moveTurn
+    );
   }
 
   getAvailableMovesFromCell(id: string) {
@@ -208,5 +234,35 @@ export default class GameController {
       !!params.roomId &&
       !!params.userName
     );
+  }
+
+  private setGameResults() {
+    const { eatenFigures } = this.room.board;
+    let winner: Player;
+    let loser: Player;
+
+    if (this.results || !this.room.players.black || !this.room.players.white)
+      return;
+
+    if (
+      eatenFigures.white.length < eatenFigures.black.length ||
+      !this.room.board.hasMoves(Color.Black)
+    ) {
+      winner = this.room.players.white;
+      loser = this.room.players.black;
+    } else {
+      winner = this.room.players.black;
+      loser = this.room.players.white;
+    }
+
+    this.results = {
+      winner,
+      loser,
+      winnerColor: winner.color,
+      score: {
+        blackFigures: this.room.board.eatenFigures.black.length,
+        whiteFigures: this.room.board.eatenFigures.white.length
+      }
+    };
   }
 }

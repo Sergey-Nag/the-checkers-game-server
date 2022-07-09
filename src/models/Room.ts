@@ -38,9 +38,7 @@ export default class Room {
     black: null
   };
   id: string;
-  moveTurn: Color = Color.White;
   watchers: Watcher[] = [];
-
   board: Board;
 
   get playersArr() {

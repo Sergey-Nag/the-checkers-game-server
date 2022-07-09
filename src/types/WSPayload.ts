@@ -8,7 +8,8 @@ enum ResponsePayloadType {
   highlight = 'highlight',
   eat = 'eat',
   gameStatus = 'gameStatus',
-  gameOver = 'gameOver'
+  gameOver = 'gameOver',
+  moveTurn = 'moveTurn'
 }
 
 enum RequestPayloadType {

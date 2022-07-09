@@ -17,7 +17,11 @@ const wss = new Server<WSGame>({ server: server });
 wss.on('connection', (ws: WSGame, req) => {
   try {
     const game = new GameController(req.url as string);
+    console.log('on connect is game over?', game.isGameOver);
 
+    if (game.isGameOver) {
+      game.gameOver(false);
+    }
     ws.on('message', (data) => {
       try {
         if (game.isGameOver) throw 'Game over';
@@ -66,9 +70,15 @@ wss.on('connection', (ws: WSGame, req) => {
           payload(ResponsePayloadType.participant, game.getParticipants())
         );
       })
-      .on(ResponsePayloadType.TO_ALL_IN_ROOM, (type: ResponsePayloadType) => {
-        console.log(type, wss.clients);
+      .on(ResponsePayloadType.moveTurn, () => {
+        ws.send(payload(ResponsePayloadType.moveTurn, game.getMoveTurn()));
+      })
+      .on(ResponsePayloadType.gameOver, () => {
+        console.log('to single');
 
+        ws.send(payload(ResponsePayloadType.gameOver, game.results));
+      })
+      .on(ResponsePayloadType.TO_ALL_IN_ROOM, (type: ResponsePayloadType) => {
         wss.clients.forEach((client) => {
           if (client.gameData?.roomId !== game.room.id) return;
 
@@ -100,7 +110,14 @@ wss.on('connection', (ws: WSGame, req) => {
               );
               break;
             case ResponsePayloadType.gameOver:
-              payloadData = payload(ResponsePayloadType.gameOver, game.winner);
+              console.log('to all');
+              payloadData = payload(ResponsePayloadType.gameOver, game.results);
+              break;
+            case ResponsePayloadType.moveTurn:
+              payloadData = payload(
+                ResponsePayloadType.moveTurn,
+                game.getMoveTurn()
+              );
               break;
             default:
               payloadData = null;
