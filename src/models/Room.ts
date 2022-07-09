@@ -5,6 +5,7 @@ import uniqid from 'uniqid';
 import Watcher from './Users/Watcher';
 import { ParticipantRole } from '../types/RoomTypes';
 import Board from './Game/Board';
+import { HOURS } from '../types/Time';
 
 export default class Room {
   static rooms: Room[] = [];
@@ -40,6 +41,24 @@ export default class Room {
   id: string;
   watchers: Watcher[] = [];
   board: Board;
+  results: {
+    winnerColor: Color;
+    winner: Player;
+    loser: Player;
+    score: {
+      black: number;
+      white: number;
+    };
+  } | null = null;
+
+  private lastTimeParticipantsChanged = 0;
+
+  get isAlive(): boolean {
+    return (
+      (this.playersArr.every((p) => !!p) && !this.results) ||
+      this.lastTimeParticipantsChanged + HOURS[2] > Date.now()
+    );
+  }
 
   get playersArr() {
     return Object.values(this.players);
@@ -48,12 +67,14 @@ export default class Room {
   constructor() {
     this.id = uniqid('R');
     this.board = new Board();
+    this.lastTimeParticipantsChanged = Date.now();
 
     Room.add(this);
   }
 
   addParticipant(user: User): [Player | Watcher, ParticipantRole] {
     const U = this.findUser(user);
+    this.lastTimeParticipantsChanged = Date.now();
 
     if (U && U instanceof Player)
       return [U, U.color as unknown as ParticipantRole];
@@ -81,6 +102,8 @@ export default class Room {
     const U = this.findUser(user);
 
     if (!U) return;
+
+    this.lastTimeParticipantsChanged = Date.now();
 
     if (U instanceof Player) {
       this.players[U.color] = null;

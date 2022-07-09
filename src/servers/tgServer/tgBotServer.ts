@@ -5,6 +5,7 @@ import TGController from './TGController';
 import CallbackData from './types/CallbackData';
 import Command from './types/Command';
 import { join } from 'path';
+import InlineQuery from './types/InlineQuery';
 
 const TOKEN = process.env.TG_TOKEN;
 
@@ -20,7 +21,7 @@ bot.on('message', (msg, _meta) => {
 
 bot.onText(/^\/(.+)/, (msg, match) => {
   if (!match) return;
-  const [_, command] = match;
+  const command = match[1];
   const chatId = msg.chat.id;
 
   switch (command) {
@@ -42,6 +43,15 @@ bot.onText(/^\/(.+)/, (msg, match) => {
         bot.sendMessage(chatId, ...TGController.getNoRoomsMessage());
       }
       break;
+    case Command.Game: {
+      const newRoom = new Room();
+
+      bot.sendMessage(
+        chatId,
+        ...TGController.getRoomMessage<SendMessageOptions>(newRoom)
+      );
+      break;
+    }
     case Command._TestApiBot: {
       bot.sendMessage(chatId, ...TGController.getTestMessage());
       break;
@@ -50,7 +60,6 @@ bot.onText(/^\/(.+)/, (msg, match) => {
 });
 
 bot.on('callback_query', (q) => {
-  console.log(q);
   if (!q.data) return;
 
   const query = q.data as CallbackData;
@@ -73,6 +82,20 @@ bot.on('callback_query', (q) => {
     }
     default: {
       console.log('def', q.data);
+    }
+  }
+});
+
+bot.on('inline_query', (q) => {
+  const { query, id } = q;
+
+  switch (query) {
+    case InlineQuery.Game: {
+      bot.answerInlineQuery(
+        id,
+        ...TGController.getAnswerOnInlineQueryMessage()
+      );
+      break;
     }
   }
 });

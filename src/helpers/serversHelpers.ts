@@ -6,8 +6,6 @@ import {
 } from '../types/WSPayload';
 
 const getRoomQueryParams = (url: string): RoomQueryParams => {
-  console.log(url);
-
   const params = new URLSearchParams(url.slice(1));
   const roomId = params.get('roomId');
   const userName = params.get('userName');
