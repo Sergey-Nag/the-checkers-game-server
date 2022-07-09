@@ -74,8 +74,6 @@ wss.on('connection', (ws: WSGame, req) => {
         ws.send(payload(ResponsePayloadType.moveTurn, game.getMoveTurn()));
       })
       .on(ResponsePayloadType.gameOver, () => {
-        console.log('to single');
-
         ws.send(payload(ResponsePayloadType.gameOver, game.getGameResult()));
       })
       .on(ResponsePayloadType.TO_ALL_IN_ROOM, (type: ResponsePayloadType) => {
@@ -110,7 +108,6 @@ wss.on('connection', (ws: WSGame, req) => {
               );
               break;
             case ResponsePayloadType.gameOver:
-              console.log('to all');
               payloadData = payload(
                 ResponsePayloadType.gameOver,
                 game.getGameResult()

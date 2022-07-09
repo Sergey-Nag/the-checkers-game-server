@@ -23,7 +23,7 @@ export default class GameController {
   }
 
   get isGameOver() {
-    if (!this.room) return false;
+    if (!this.room || !this.room.isAlive) return false;
 
     if (
       Object.values(this.room.board.eatenFigures).some(
@@ -142,7 +142,7 @@ export default class GameController {
   }
 
   addParticipantToRoom(user: User) {
-    const [participant, role] = this.room.addParticipant(user);
+    const [participant] = this.room.addParticipant(user);
 
     this.user = participant;
 
