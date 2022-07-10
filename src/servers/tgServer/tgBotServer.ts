@@ -56,6 +56,18 @@ bot.onText(/^\/(.+)/, (msg, match) => {
       bot.sendMessage(chatId, ...TGController.getTestMessage());
       break;
     }
+    default: {
+      const [_, roomId] = command.split(' ');
+
+      const room = Room.get(roomId);
+
+      if (!room) return;
+
+      bot.sendMessage(
+        chatId,
+        ...TGController.getRoomMessage<SendMessageOptions>(room)
+      );
+    }
   }
 });
 
@@ -96,6 +108,16 @@ bot.on('inline_query', (q) => {
         ...TGController.getAnswerOnInlineQueryMessage()
       );
       break;
+    }
+    default: {
+      const room = Room.get(query);
+
+      if (!room) return;
+
+      bot.answerInlineQuery(id, [], {
+        switch_pm_text: 'To bot',
+        switch_pm_parameter: query
+      });
     }
   }
 });

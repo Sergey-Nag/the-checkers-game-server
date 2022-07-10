@@ -107,7 +107,6 @@ export default class GameController {
     } else {
       this.events.emit(ResponsePayloadType.gameOver);
     }
-    console.log('GAMEOVER to all?', sendToAll);
   }
 
   end() {
