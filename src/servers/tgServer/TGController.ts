@@ -3,7 +3,7 @@ import TelegramBot, {
   SendMessageOptions
 } from 'node-telegram-bot-api';
 import Room from '../../models/Room';
-import CallbackData from './types/CallbackData';
+import CallbackData, { InlineCallbackData } from './types/CallbackData';
 
 const WEB_APP_HOST = `https://${process.env.HOST}/tg-web-app`;
 
@@ -24,17 +24,25 @@ export default class TGController {
           input_message_content: {
             message_text: 'Start game'
           },
-          reply_markup: TGController.getButtons(CallbackData.JoinRoom, room.id)
+          reply_markup: TGController.getButtons(
+            InlineCallbackData.RequestToJoin,
+            room.id
+          )
         }
       ],
       {
         is_personal: true,
-        cache_time: 10
+        cache_time: 10,
+        switch_pm_text: 'go',
+        switch_pm_parameter: 'letsgo'
       }
     ];
   }
 
-  static getButtons(type: CallbackData, data?: any): any | undefined {
+  static getButtons(
+    type: CallbackData | InlineCallbackData,
+    data?: any
+  ): any | undefined {
     if (type === CallbackData.CreateRoom) {
       return {
         inline_keyboard: [
@@ -55,6 +63,17 @@ export default class TGController {
               web_app: {
                 url: `${WEB_APP_HOST}/game/${data}`
               }
+            }
+          ]
+        ]
+      };
+    } else if (type === InlineCallbackData.RequestToJoin && data) {
+      return {
+        inline_keyboard: [
+          [
+            {
+              text: 'Join',
+              switch_inline_query_current_chat: data
             }
           ]
         ]
@@ -105,14 +124,15 @@ export default class TGController {
     ];
   }
 
-  private static getRoomMessageText({ id, isAlive, playersArr, board }: Room) {
+  private static getRoomMessageText({ id, isAlive, players, board }: Room) {
     const status = isAlive ? '🟢' : '🔴';
+    const whiteName = players.white ? players.white.name + ' ' : '';
+    const blackName = players.black ? players.black.name + ' ' : '';
 
     return `
 ${status} Room id: \`${id}\`
-    Players: ${playersArr.filter((p) => !!p).length}
-    ⚪: ${board.eatenFigures.white.length}
-    ⚫: ${board.eatenFigures.black.length}
+    ⚪: ${whiteName}(${board.eatenFigures.white.length})
+    ⚫: ${blackName}(${board.eatenFigures.black.length})
     `;
   }
 }
