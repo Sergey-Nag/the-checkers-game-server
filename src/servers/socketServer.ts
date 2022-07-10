@@ -100,6 +100,7 @@ wss.on('connection', (ws: WSGame, req) => {
                 ResponsePayloadType.participant,
                 game.getParticipants()
               );
+              game.sendGameStatus(true);
               break;
             case ResponsePayloadType.eat:
               payloadData = payload(
@@ -132,8 +133,8 @@ wss.on('connection', (ws: WSGame, req) => {
           wss.clients.forEach((client) => {
             if (
               !client.gameData.roomId ||
-              client.gameData.roomId !== game.room.id ||
-              client.gameData.userId === game.user.id
+              client.gameData.roomId !== game.room?.id ||
+              client.gameData.userId === game.user?.id
             )
               return;
 
@@ -145,6 +146,7 @@ wss.on('connection', (ws: WSGame, req) => {
                   ResponsePayloadType.participant,
                   game.getParticipants()
                 );
+                game.sendGameStatus(true);
                 break;
               default:
                 payloadData = null;
